@@ -1,0 +1,1 @@
+docker run -v /raid:/raid -v /mnt:/mnt -v /mnt_datasets/:/mnt_datasets -v /mnt_ssd/:/mnt_ssd/ -v /old_mnt/:/old_mnt -v /tmp/.X11-unix/:/tmp/X11-unix:rw -v /home/kuartis/:/home/kuartis/ --gpus all --ipc=host --name "onurcan_ddr" -it nvcr.io/nvidia/pytorch:22.09-py3 && cd /mnt/onurcan/ddrm-jpeg && nvidia-smi

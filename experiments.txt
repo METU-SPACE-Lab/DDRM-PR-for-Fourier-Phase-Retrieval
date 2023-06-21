@@ -1,0 +1,140 @@
+=====
+ID		{self.args.eta},		{self.args.etaB},		{self.args.num_avg_samples}		{self.args.timesteps},		{self.args.init_timestep},		{idx_so_far		+		j}		::		{avg_psnr.data},		{avg_psnr_y.data}
+
+13		0.7799,		0.17,		7,		15,		300,		13		::		24.970508,		        22.50089454650879
+14		0.7799,		0.17,		7,		21,		300,		14		::		24.917835,		        22.50089454650879
+15		0.7799,		0.17,		10,		21,		300,		15		::		24.934671,		        22.50089454650879
+36		0.8599,		0.17,		16,		18,		300,		36		::	    24.960878372192383,		22.50089454650879
+		
+
+
+81		0.7,		0.17,		1,		15,		300,		81		::		26.04694366455078,		23.842758178710938
+82		0.7,		0.17,		1,		30,		300,		82		::		26.000049591064453,		23.842758178710938
+83		0.7,		0.17,		4,		21,		300,		83		::		26.091968536376953,		23.842758178710938
+84		0.7,		0.17,		13,		24,		300,		84		::		26.090473175048828,		23.842758178710938
+85		0.7,		0.17,		16,		15,		300,		85		::		26.069791793823242,		23.842758178710938
+86		0.7,		0.17,		19,		30,		300,		86		::		26.057804107666016,		23.842758178710938
+93		0.7799,		0.17,		1,		24,		300,		93		::		26.024568557739258,		23.842758178710938
+95		0.7799,		0.17,		4,		30,		300,		95		::		26.032978057861328,		23.842758178710938
+102		0.8599,		0.17,		1,		18,		300,		102		::		26.00071144104004,		23.842758178710938
+103		0.8599,		0.17,		7,		18,		300,		103		::		26.02822494506836,		23.842758178710938
+104		0.8599,		0.17,		10,		24,		300,		104		::		26.04831314086914,		23.842758178710938
+105		0.8599,		0.17,		10,		30,		300,		105		::		26.03301239013672,		23.842758178710938
+106		0.8599,		0.17,		13,		27,		300,		106		::		26.045066833496094,		23.842758178710938
+
+169		0.7799,		0.17,		19,		15,		300,		169		::		23.823137283325195,		21.87394905090332
+214		0.9399,		0.17,		10,		15,		300,		214		::		23.844886779785156,		21.87394905090332
+
+
+233		0.7,		0.17,		7,		33,		300,		233		::		26.982074737548828,		24.976150512695312
+236		0.7,		0.17,		13,		33,		300,		236		::		26.96963119506836,		24.976150512695312
+237		0.7,		0.17,		16,		33,		300,		237		::		26.979602813720703,		24.976150512695312
+250		0.7799,		0.17,		10,		30,		300,		250		::		26.90873908996582,		24.976150512695312
+
+
+        0.78        0.17        1       25      300         
+=====
+
+
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene1 -i celeba --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 25 --init_timestep 300
+Total Average PSNR: 25.48
+Total Average PSNR of JPEG: 23.83
+Number of samples: 11
+
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene2 -i celeba_dene2 --deg pr --num_avg_samples 1 --eta 0.88 --etaB 0.17 --timesteps 25 --init_timestep 300
+Total Average PSNR: 25.46
+Total Average PSNR of JPEG: 23.83
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene3 -i celeba_dene3 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.27 --timesteps 25 --init_timestep 300
+Total Average PSNR: 25.25
+Total Average PSNR of JPEG: 23.83
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene4 -i celeba_dene4 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.10 --timesteps 25 --init_timestep 300
+Total Average PSNR: 24.81
+Total Average PSNR of JPEG: 23.83
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene5 -i celeba_dene5 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 300
+Total Average PSNR: 25.62
+Total Average PSNR of JPEG: 23.91
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene6 -i celeba_dene6 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 45 --init_timestep 300
+Total Average PSNR: 25.54
+Total Average PSNR of JPEG: 23.89
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene7 -i celeba_dene7 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 65 --init_timestep 300
+Total Average PSNR: 25.33
+Total Average PSNR of JPEG: 23.81
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene8 -i celeba_dene8 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 370
+Total Average PSNR: 25.32
+Total Average PSNR of JPEG: 23.68
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene9 -i celeba_dene9 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 170
+Total Average PSNR: 25.09
+Total Average PSNR of JPEG: 23.63
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene10 -i celeba_dene10 --deg pr --num_avg_samples 2 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 300
+Total Average PSNR: 25.86
+Total Average PSNR of JPEG: 24.09
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene10 -i celeba_dene10 --deg pr --num_avg_samples 2 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 300
+Total Average PSNR: 25.86
+Total Average PSNR of JPEG: 24.09
+Number of samples: 11
+
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene5 -i celeba_dene5 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 300
+Total Average PSNR: 25.64
+Total Average PSNR of JPEG: 23.91
+Number of samples: 11
+(3 ypaınca noise je)
+
+
+
+(noiseless:)
+python main.py --ni --config celeba_pr.yml --doc celeba_dene15 -i celeba_dene15 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 300
+Total Average PSNR: 30.58
+Total Average PSNR of JPEG: 37.94
+Number of samples: 11
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene16 -i celeba_dene16 --deg pr --num_avg_samples 1 --eta 1.0 --etaB 0.4 --timesteps 20 --init_timestep 300
+Total Average PSNR: 33.52
+Total Average PSNR of JPEG: 37.94
+Number of samples: 11
+
+
+
+
+python main.py --ni --config celeba_pr.yml --doc celeba_dene19 -i celeba_dene19 --deg pr --num_avg_samples 1 --eta 0.78 --etaB 0.17 --timesteps 35 --init_timestep 300
+
+
+
+
+
+
+high reg
+python main.py --ni --config celeba_pr.yml --doc celeba_dene25 -i celeba_dene25 --deg pr --num_avg_samples 1 --eta 0.3 --etaB 0.1 --timesteps 20 --init_timestep 300
+Total Average PSNR: 24.87
+Total Average PSNR of JPEG: 23.68
+Number of samples: 11
+
+
+
+
+low reg
+python main.py --ni --config celeba_pr.yml --doc celeba_dene26 -i celeba_dene26 --deg pr --num_avg_samples 1 --eta 1.0 --etaB 0.6 --timesteps 20 --init_timestep 300
+
+Total Average PSNR: 24.06
+Total Average PSNR of JPEG: 23.68
+Number of samples: 11
