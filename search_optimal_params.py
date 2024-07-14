@@ -2,12 +2,19 @@ import subprocess
 import numpy as np
 import re
 
-print("eta, \t etaB, \t num_avg_samples, \t timesteps: \t  \t hio \t \t diff")
-for eta in np.arange(0.7, 1.0, 0.08):
-    for etaB in np.arange(0.07, eta * 2 / 3, 0.1):
-        for num_avg_samples in range(1, 21, 3):
-            for timesteps in range(15, 36, 3):
-                command = f"python main.py --ni --config celeba_pr.yml --doc celeba -i celeba --deg pr --num_avg_samples {num_avg_samples} --eta {eta} --etaB {etaB} --timesteps {timesteps}"
+print("eta, \t etaB, \t num_avg_samples, \t timesteps \t init_t: \t  \t hio \t \t diff")
+# for eta in np.arange(0.7, 1.0, 0.08):
+#     for etaB in np.arange(0.07, eta * 2 / 3, 0.1):
+#         for num_avg_samples in range(1, 21, 3):
+#             for timesteps in range(15, 36, 3):
+for random_sample in range(1000):
+                eta = np.random.uniform(0.5, 1.0)
+                etaB = np.random.uniform(0.07, 0.8)
+                num_avg_samples = np.random.randint(1, 3)
+                timesteps = np.random.randint(15, 36)
+                init_t = np.random.randint(timesteps+10, 800)
+
+                command = f"CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba_{eta}_{etaB}_{num_avg_samples}_{timesteps}_{init_t} -i celeba_{eta}_{etaB}_{num_avg_samples}_{timesteps}_{init_t} --deg pr --num_avg_samples {num_avg_samples} --eta {eta} --etaB {etaB} --timesteps {timesteps} --init_timestep {init_t}"
 
                 hio_psnr = 0
                 diff_psnr = 0
@@ -25,9 +32,10 @@ for eta in np.arange(0.7, 1.0, 0.08):
                 diff_psnr /= MONTE_CARLO
                 
                 # print(output)
-                print(
-                    f"{eta}, \t {etaB}, \t {num_avg_samples}, \t {timesteps}: \t  \t {hio_psnr} \t \t {diff_psnr}"
-                )
+                res_str = f"{eta}, \t {etaB}, \t {num_avg_samples}, \t {timesteps}, \t {init_t}: \t  \t {hio_psnr} \t \t {diff_psnr}"
+                print(res_str)
+                with open("search_results.txt", "a") as f:
+                    f.write(res_str + "\n")
 
 
 # eta      etaB    numAvgS timesteps       hio             diff

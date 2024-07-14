@@ -269,7 +269,7 @@ def hio_stage(magnitudes_oversampled___mask___mask_slice___normalization___image
   return torch.tensor(image_iter, device=torch.device("cuda:0"), dtype=torch.float32)/255*2-1
 
 
-def pr_encode(image_full):
+def pr_encode(image_full, alpha_=3):
     image_full = (image_full.squeeze().cpu().numpy()+1)/2*255
     y = []
     for i in range(3):
@@ -282,7 +282,7 @@ def pr_encode(image_full):
         normalization = np.sqrt(image_.shape[0]*image_.shape[1]) * SamplingRateSqrt**2
         fourier_oversampled_ = (np.fft.fft2(image_padded_)/(normalization))
         # add noise
-        alpha = 3
+        alpha = alpha_
         intensity_noise = alpha*np.multiply(np.abs(fourier_oversampled_), np.random.randn(*fourier_oversampled_.shape))
         y2 = np.square(np.abs(fourier_oversampled_)) + intensity_noise
         y2 = np.multiply(y2, y2>0)
@@ -333,7 +333,7 @@ def jd(magnitudes_oversampled___mask___mask_slice___normalization___image_):
 
         # result_oversampled = x_init_best
         result_oversampled = fienup_phase_retrieval(magnitudes_oversampled[i],
-                                                    steps=1,
+                                                    steps=50,
                                                     mask=mask,
                                                     verbose=False,
                                                     x_init=x_init_best,

@@ -210,12 +210,12 @@ class Diffusion(object):
             from functools import partial
             jpeg_decode = partial(qd, qf = 0)
             jpeg_encode = partial(qe, qf = 0)
-        elif deg == 'pr':
+        elif deg[:2] == 'pr':
+            jpeg_qf = float(deg[2:])
             from functions.utils import hio_stage as qd, pr_encode as qe
             from functools import partial
             jpeg_decode = partial(qd)
-            jpeg_encode = partial(qe)
-            jpeg_qf = 3
+            jpeg_encode = partial(qe, alpha_ = jpeg_qf)
         else:
             print("ERROR: degradation type not supported")
             quit()

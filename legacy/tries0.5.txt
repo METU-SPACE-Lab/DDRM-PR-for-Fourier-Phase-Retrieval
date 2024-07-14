@@ -1,0 +1,15 @@
+29.55    (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.20 --etaB 0.26 --timesteps 15 --init_timestep 250
+29.02   (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.20 --etaB 0.26 --timesteps 15 --init_timestep 150
+28.05    (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.20 --etaB 0.26 --timesteps 15 --init_timestep 100
+
+
+29.77    (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.20 --etaB 0.26 --timesteps 15 --init_timestep 300
+29.87    (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.20 --etaB 0.26 --timesteps 15 --init_timestep 350
+
+
+
+
+
+30.0 (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.20 --etaB 0.20 --timesteps 15 --init_timestep 350
+
+30.04 (ddrm) root@727f82f27742:/mnt/onurcan/ddrmphaseretrieval# CUDA_VISIBLE_DEVICES=1 python main.py --ni --config celeba_pr.yml --doc celeba  -i celeba_dene_ok_1____ --deg pr0.5 --num_avg_samples 1 --eta 0.15 --etaB 0.20 --timesteps 15 --init_timestep 350

@@ -9,6 +9,7 @@ import torch
 import numpy as np
 import torch.utils.tensorboard as tb
 
+from measure_metrics import calculate_metrics
 from runners.diffusion import Diffusion
 
 torch.set_printoptions(sci_mode=False)
@@ -167,6 +168,8 @@ def main():
         runner.sample()
     except Exception:
         logging.error(traceback.format_exc())
+        
+    calculate_metrics(args.image_folder)
 
     return 0
 

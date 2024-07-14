@@ -26,6 +26,8 @@ def jpeg_steps(x, seq, model, b, y_0, etaB, etaA, etaC, cls_fn=None, classes=Non
         a_init = compute_alpha(b, (torch.ones(n) * seq[-1]).to(x.device).long())
 
         xs = [a_init.sqrt() * y_0 + (1 - a_init).sqrt() * torch.randn_like(x)]
+        
+        H_pseudoinverse_y = jpeg_decode(jpeg_encode(y_0))
         for i, j in tqdm(zip(reversed(seq), reversed(seq_next))):
             t = (torch.ones(n) * i).to(x.device)
             next_t = (torch.ones(n) * j).to(x.device)
@@ -49,7 +51,12 @@ def jpeg_steps(x, seq, model, b, y_0, etaB, etaA, etaC, cls_fn=None, classes=Non
 
             xt_next = x0_t
             
-            xt_next = xt_next - jpeg_decode(jpeg_encode(xt_next)) + jpeg_decode(jpeg_encode(y_0))
+            # xt_next = xt_next - jpeg_decode(jpeg_encode(xt_next)) + jpeg_decode(jpeg_encode(y_0))
+            # print("i", i)
+            # print("t", t)
+            # print("alpha", at)
+            # xt_next = xt_next - jpeg_decode(jpeg_encode(xt_next)) + jpeg_decode(jpeg_encode((1 - at ** 1.0) * y_0 + at ** 1.0 * xt_next))
+            xt_next = xt_next + (- jpeg_decode(jpeg_encode(xt_next)) + H_pseudoinverse_y)
 
             xt_next = etaB * at_next.sqrt() * xt_next + (1 - etaB) * at_next.sqrt() * x0_t + etaA * (1 - at_next).sqrt() * torch.randn_like(xt_next) + (1 - etaA) * et * (1 - at_next).sqrt()
 
