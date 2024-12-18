@@ -44,64 +44,124 @@ import cv2
 A_matrix = cp.load("exp/empirical_data/A_matrix.npy")
 A_adj_matrix = A_matrix.T.conj()
 
-A = lambda x: A_matrix @ x.flatten(order="F")
-A_adj = lambda y: A_adj_matrix @ y.flatten(order="F")
+A = lambda x: (A_matrix @ x.flatten(order="F")).reshape(4 * 64, 4 * 64, order="F")
+A_adj = lambda y: (A_adj_matrix @ y.flatten(order="F")).reshape(64, 64, order="F")
 
 
 # Fienup Phase Retrieval
-def fienup_phase_retrieval(
-    mag, beta=0.9, steps=200, mode="hybrid", verbose=True, x_init=None
-):
-    assert beta > 0, "Step size must be a positive number"
-    assert steps > 0, "Steps must be a positive number"
-    assert mode in [
-        "input-output",
-        "output-output",
-        "hybrid",
-    ], "Mode must be 'input-output', 'output-output' or 'hybrid'"
+# def fienup_phase_retrieval(
+#     mag, beta=0.9, steps=200, mode="hybrid", verbose=True, x_init=None
+# ):
+#     assert beta > 0, "Step size must be a positive number"
+#     assert steps > 0, "Steps must be a positive number"
+#     assert mode in [
+#         "input-output",
+#         "output-output",
+#         "hybrid",
+#     ], "Mode must be 'input-output', 'output-output' or 'hybrid'"
 
-    mag = cp.array(mag)
-    if x_init is not None:
-        x_init = cp.array(x_init)
+#     mag = cp.array(mag)
+#     if x_init is not None:
+#         x_init = cp.array(x_init)
 
-    # Initialize y_hat with random phase if no x_init is provided
+#     # Initialize y_hat with random phase if no x_init is provided
+#     if x_init is None:
+#         y_hat = mag * cp.exp(1j * 2 * cp.pi * cp.random.rand(*mag.shape))
+#     else:
+#         y_hat = mag * cp.exp(1j * cp.angle(A(x_init).reshape(mag.shape, order="F")))
+
+#     x = cp.zeros_like(mag, dtype=cp.float32)
+#     x_p = None
+
+#     for i in tqdm(range(1, steps + 1)):
+#         if i % 100 == 0 and verbose:
+#             print(f"Step {i} of {steps}")
+
+#         # Inverse operation
+#         y = cp.real(A_adj(y_hat))
+
+#         if x_p is None:
+#             x_p = y if x_init is None else x_init
+#         else:
+#             x_p = x
+
+#         if mode in ["output-output", "hybrid"]:
+#             x = y
+
+#         # Enforce nonnegativity constraint
+#         indices = y < 0
+#         if mode in ["hybrid", "input-output"]:
+#             x[indices] = x_p[indices] - beta * y[indices]
+#         elif mode == "output-output":
+#             x[indices] = y[indices] - beta * y[indices]
+
+#         # Forward operation
+#         x_hat = A(x)
+
+#         # Reshape x_hat to match mag's shape before enforcing Fourier constraints
+#         y_hat = mag * cp.exp(1j * cp.angle(x_hat.reshape(mag.shape, order="F")))
+
+#     return cp.asnumpy(x)
+
+
+# Hybrid Input-Output Algorithm
+def fienup_phase_retrieval(mag, beta=0.97, steps=200, x_init=None, verbose=True):
+    """
+    Hybrid Input-Output (HIO) algorithm for phase retrieval.
+
+    Args:
+        mag (cp.ndarray): Magnitude measurements |Ax| (shape matches A(x)).
+        beta (float): Relaxation parameter for HIO updates (default: 0.9).
+        steps (int): Number of iterations (default: 200).
+        x_init (cp.ndarray): Optional initial guess for x.
+        verbose (bool): If True, displays progress.
+
+    Returns:
+        cp.ndarray: Reconstructed real, non-negative solution x.
+    """
+    mag = cp.array(mag).reshape(4 * 64, 4 * 64, order="F")
+
+    # Initialize solution x
     if x_init is None:
-        y_hat = mag * cp.exp(1j * 2 * cp.pi * cp.random.rand(*mag.shape))
+        x = (
+            cp.random.rand(A_adj_matrix.shape[0], 1)
+            .astype(cp.float32)
+            .reshape(64, 64, order="F")
+        )
     else:
-        y_hat = mag * cp.exp(1j * cp.angle(A(x_init).reshape(mag.shape, order="F")))
+        x = cp.array(x_init, dtype=cp.float32)
 
-    x = cp.zeros_like(mag, dtype=cp.float32)
-    x_p = None
+    # Initialize y_hat with random phase
+    y_hat = mag * cp.exp(1j * cp.angle(A(x)))
 
-    for i in tqdm(range(1, steps + 1)):
-        if i % 100 == 0 and verbose:
-            print(f"Step {i} of {steps}")
+    # Progress bar
+    pbar = tqdm(range(steps), miniters=10) if verbose else range(steps)
 
-        # Inverse operation
-        y = cp.real(A_adj(y_hat))
+    # Main HIO loop
+    for i in pbar:
+        # Step 1: Apply inverse operator to estimate real-space solution
+        g_prime = cp.real(A_adj(y_hat))
 
-        if x_p is None:
-            x_p = y if x_init is None else x_init
-        else:
-            x_p = x
+        # Step 2: Apply HIO non-negativity constraint
+        negative_indices = g_prime < 0
+        x_new = cp.where(negative_indices, x - beta * g_prime, g_prime)
+        # negative_indices = g_prime > 1  # cp.bitwise_or(g_prime < 0, g_prime > 1)
+        # x_new = cp.where(negative_indices, x_new + beta * g_prime, g_prime)
 
-        if mode in ["output-output", "hybrid"]:
-            x = y
+        # Step 3: Apply forward operator to enforce magnitude constraint
+        Ax_new = A(x_new)
+        y_hat = mag * cp.exp(1j * cp.angle(Ax_new))
 
-        # Enforce nonnegativity constraint
-        indices = y < 0
-        if mode in ["hybrid", "input-output"]:
-            x[indices] = x_p[indices] - beta * y[indices]
-        elif mode == "output-output":
-            x[indices] = y[indices] - beta * y[indices]
+        # Step 4: Update solution
+        x = x_new
 
-        # Forward operation
-        x_hat = A(x)
+        # Step 5: Verbose progress
+        if verbose and i % 10 == 0:
+            error = cp.linalg.norm(cp.abs(A(x)) - mag) / cp.linalg.norm(mag)
+            pbar.set_description(f"Iteration {i+1}")
+            pbar.set_postfix({"Relative Error": f"{error:.6e}"})
 
-        # Reshape x_hat to match mag's shape before enforcing Fourier constraints
-        y_hat = mag * cp.exp(1j * cp.angle(x_hat.reshape(mag.shape, order="F")))
-
-    return cp.asnumpy(x)
+    return cp.asnumpy(x)  # Return solution as numpy array
 
 
 # Random Initializations
@@ -109,18 +169,15 @@ def random_best(magnitudes_oversampled):
     resid_best = float("inf")
     x_init_best = None
 
-    for _ in range(5):
-        cp.random.seed(2023)
+    cp.random.seed(2023)
+    for _ in range(70):
         result = cp.array(
-            fienup_phase_retrieval(magnitudes_oversampled, steps=10, verbose=False)
+            fienup_phase_retrieval(magnitudes_oversampled, steps=100, verbose=False)
         )
 
         # Reshape the result of A(result) to match magnitudes_oversampled
         resid = LA(
-            cp.asnumpy(magnitudes_oversampled)
-            - cp.asnumpy(
-                cp.abs(A(result).reshape(magnitudes_oversampled.shape, order="F"))
-            ),
+            cp.asnumpy(magnitudes_oversampled) - cp.asnumpy(cp.abs(A(result))),
             2,
         )
         if resid < resid_best:
@@ -130,15 +187,21 @@ def random_best(magnitudes_oversampled):
     return x_init_best
 
 
+with h5py.File("exp/empirical_data/YH_squared_test.mat", "r") as f:
+    YH_test = f["YH_squared_test"][:]
+
+Y_test = np.sqrt(YH_test[:, 2].reshape(4 * 64, 4 * 64, order="F"))
+
+
 # HIO Stage
 def hio_stage(image_full_X_test):
     print("EMPIRIK-HIOSTAGE")
-    image_full, Y_test = image_full_X_test
+    image_full = image_full_X_test
 
     x_init_best = random_best(Y_test)
 
     result = fienup_phase_retrieval(
-        Y_test, steps=300, x_init=x_init_best, verbose=False
+        Y_test, steps=1900, x_init=x_init_best, verbose=True
     )
 
     print(
@@ -146,7 +209,8 @@ def hio_stage(image_full_X_test):
     )
 
     # Reshape the result to 64x64
-    image_iter = np.reshape((result / 30).clip(0, 255), (64, 64), order="F")
+    image_iter = result / result.max() * 255  # .clip(0, 1) * 255
+    image_iter = image_iter.clip(0, 255)
 
     print(
         "image_full",
@@ -203,11 +267,6 @@ def hio_stage(image_full_X_test):
 def pr_encode(image_full, alpha_=3):
     print("EMPIRIK-PRENCODE")
 
-    with h5py.File("exp/empirical_data/YH_squared_test.mat", "r") as f:
-        YH_test = f["YH_squared_test"][:]
-
-    Y_test = np.sqrt(YH_test[:, 1].reshape(4 * 64, 4 * 64, order="F"))
-
     # Ax =? Y_test
     image_full_tensor = image_full
     image_full = (image_full_tensor[0, 0].cpu().numpy() + 1) / 2 * 255
@@ -217,9 +276,7 @@ def pr_encode(image_full, alpha_=3):
     )
 
     # norm of A(image_full_64) - Y_test
-    calculated_y = cp.asnumpy(
-        cp.abs(A(cp.array(image_full_64 / 255))).reshape((4 * 64, 4 * 64), order="F")
-    )
+    calculated_y = cp.asnumpy(cp.abs(A(cp.array(image_full_64 / image_full_64.max()))))
     real_y = Y_test
 
     print(calculated_y)
@@ -230,7 +287,7 @@ def pr_encode(image_full, alpha_=3):
     plt.imsave("real_y.png", real_y, cmap="gray")
     plt.imsave("calculated_y.png", calculated_y, cmap="gray")
 
-    return image_full_64, calculated_y  # Y_test
+    return image_full_64
 
 
 # always jd(je())
@@ -245,14 +302,17 @@ def je(image_full):
     # Use A function to process image_full's first channel
     image_full_tensor = image_full
     print("image_full_tensor", image_full_tensor.shape)
-    image_full = (image_full_tensor[0, 0].cpu().numpy() + 1) / 2 * 255
+    image_full = (image_full_tensor[0].mean(dim=0).cpu().numpy() + 1) / 2 * 255
+    print("----image_full", image_full.shape)
     # resize 64x64
     image_full_64 = cv2.resize(image_full, (64, 64))
+    # clip 0-255
+    image_full_64 = image_full_64.clip(0, 255)
 
     # Perform Fourier transform using A
-    X_test = cp.abs(A(cp.array(image_full_64))).reshape((4 * 64, 4 * 64))
+    # X_test = cp.abs(A(cp.array(image_full_64)))
 
-    return image_full_64, X_test
+    return image_full_64
 
 
 # JD Function
@@ -262,20 +322,15 @@ def jd(je_output):
     Processes the output from je and returns a 3-channel batch tensor.
     """
     print("EMPIRIK-JD")
-    image_full, X_test = je_output
+    image_full = je_output
     print("image_full", image_full.shape, image_full.min(), image_full.max())
-    print("X_test", X_test.shape, X_test.min(), X_test.max())
 
     # Perform Fienup phase retrieval
-    result = fienup_phase_retrieval(
-        X_test, steps=1000, x_init=image_full, verbose=False
-    )
+    result = fienup_phase_retrieval(Y_test, steps=280, x_init=image_full, verbose=False)
 
     # Post-process the result
-    image_iter = result
-
-    # Reshape the result to 64x64
-    image_iter = np.reshape(image_iter, (64, 64))
+    image_iter = result / result.max() * 255
+    image_iter = image_iter.clip(0, 255)
 
     print("result", result.shape, result.min(), result.max(), result.dtype)
     print(
@@ -290,8 +345,8 @@ def jd(je_output):
     image_iter_flipped = np.flip(image_iter).copy()
 
     if skimage.metrics.peak_signal_noise_ratio(
-        image_full, image_iter_flipped
-    ) > skimage.metrics.peak_signal_noise_ratio(image_full, image_iter):
+        image_full / 255, image_iter_flipped / 255
+    ) > skimage.metrics.peak_signal_noise_ratio(image_full / 255, image_iter / 255):
         image_iter = image_iter_flipped
 
     # Repeat the result across 3 channels

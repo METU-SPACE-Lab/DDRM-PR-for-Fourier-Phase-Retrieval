@@ -295,7 +295,7 @@ class Diffusion(object):
                     # Assuming the variable inside the .mat file is 'XH_test'
                     XH_test = f["XH_test"][:]
                 print(XH_test.shape)
-                X_test = XH_test[:, 1].reshape(64, 64, order="F")
+                X_test = XH_test[:, 2].reshape(64, 64, order="F")
                 X_test_resized = cv2.resize(X_test, (256, 256))
                 X_test_tensor = torch.tensor(
                     np.repeat(X_test_resized[np.newaxis, :, :], 3, axis=0),
