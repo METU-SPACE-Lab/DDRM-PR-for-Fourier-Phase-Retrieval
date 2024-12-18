@@ -143,3 +143,4 @@ dependencies:
     - mat73
     - opencv-python
     - scikit-image
+    - torchmetrics==1.3.0

@@ -12,13 +12,18 @@ from models.diffusion import Model
 from datasets import get_dataset, data_transform, inverse_data_transform
 from functions.ckpt_util import get_ckpt_path, download
 from functions.denoising import jpeg_steps
-from functions.utils import load_data, load_checkpoint, cal_ssim, cmap_convert, hio_stage
 
 import torchvision.utils as tvu
 
 from guided_diffusion.unet import UNetModel
-from guided_diffusion.script_util import create_model, create_classifier, classifier_defaults, args_to_dict
+from guided_diffusion.script_util import (
+    create_model,
+    create_classifier,
+    classifier_defaults,
+    args_to_dict,
+)
 import random
+
 
 def get_beta_schedule(beta_schedule, *, beta_start, beta_end, num_diffusion_timesteps):
     def sigmoid(x):
@@ -27,8 +32,8 @@ def get_beta_schedule(beta_schedule, *, beta_start, beta_end, num_diffusion_time
     if beta_schedule == "quad":
         betas = (
             np.linspace(
-                beta_start ** 0.5,
-                beta_end ** 0.5,
+                beta_start**0.5,
+                beta_end**0.5,
                 num_diffusion_timesteps,
                 dtype=np.float64,
             )
@@ -93,57 +98,82 @@ class Diffusion(object):
 
     def sample(self):
         cls_fn = None
-        if self.config.model.type == 'simple':    
+        if self.config.model.type == "simple":
             model = Model(self.config)
             # This used the pretrained DDPM model, see https://github.com/pesser/pytorch_diffusion
             if self.config.data.dataset == "CIFAR10":
                 name = "cifar10"
             elif self.config.data.dataset == "LSUN":
                 name = f"lsun_{self.config.data.category}"
-            elif self.config.data.dataset == 'CelebA_HQ':
-                name = 'celeba_hq'
+            elif self.config.data.dataset == "CelebA_HQ":
+                name = "celeba_hq"
             else:
                 raise ValueError
-            if name != 'celeba_hq':
+            if name != "celeba_hq":
                 ckpt = get_ckpt_path(f"ema_{name}", prefix=self.args.exp)
                 print("Loading checkpoint {}".format(ckpt))
-            elif name == 'celeba_hq':
-                #ckpt = '~/.cache/diffusion_models_converted/celeba_hq.ckpt'
+            elif name == "celeba_hq":
+                # ckpt = '~/.cache/diffusion_models_converted/celeba_hq.ckpt'
                 ckpt = os.path.join(self.args.exp, "logs/celeba/celeba_hq.ckpt")
                 if not os.path.exists(ckpt):
-                    download('https://image-editing-test-12345.s3-us-west-2.amazonaws.com/checkpoints/celeba_hq.ckpt', ckpt)
+                    download(
+                        "https://image-editing-test-12345.s3-us-west-2.amazonaws.com/checkpoints/celeba_hq.ckpt",
+                        ckpt,
+                    )
             else:
                 raise ValueError
             model.load_state_dict(torch.load(ckpt, map_location=self.device))
             model.to(self.device)
             model = torch.nn.DataParallel(model)
 
-        elif self.config.model.type == 'openai':
+        elif self.config.model.type == "openai":
             config_dict = vars(self.config.model)
             model = create_model(**config_dict)
             if self.config.model.use_fp16:
                 model.convert_to_fp16()
             if self.config.model.class_cond:
-                ckpt = os.path.join(self.args.exp, 'logs/imagenet/%dx%d_diffusion.pt' % (self.config.data.image_size, self.config.data.image_size))
+                ckpt = os.path.join(
+                    self.args.exp,
+                    "logs/imagenet/%dx%d_diffusion.pt"
+                    % (self.config.data.image_size, self.config.data.image_size),
+                )
                 if not os.path.exists(ckpt):
-                    download('https://openaipublic.blob.core.windows.net/diffusion/jul-2021/%dx%d_diffusion_uncond.pt' % (self.config.data.image_size, self.config.data.image_size), ckpt)
+                    download(
+                        "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/%dx%d_diffusion_uncond.pt"
+                        % (self.config.data.image_size, self.config.data.image_size),
+                        ckpt,
+                    )
             else:
-                ckpt = os.path.join(self.args.exp, "logs/imagenet/256x256_diffusion_uncond.pt")
+                ckpt = os.path.join(
+                    self.args.exp, "logs/imagenet/256x256_diffusion_uncond.pt"
+                )
                 if not os.path.exists(ckpt):
-                    download('https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt', ckpt)
-                
-            
+                    download(
+                        "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt",
+                        ckpt,
+                    )
+
             model.load_state_dict(torch.load(ckpt, map_location=self.device))
             model.to(self.device)
             model.eval()
             model = torch.nn.DataParallel(model)
 
             if self.config.model.class_cond:
-                ckpt = os.path.join(self.args.exp, 'logs/imagenet/%dx%d_classifier.pt' % (self.config.data.image_size, self.config.data.image_size))
+                ckpt = os.path.join(
+                    self.args.exp,
+                    "logs/imagenet/%dx%d_classifier.pt"
+                    % (self.config.data.image_size, self.config.data.image_size),
+                )
                 if not os.path.exists(ckpt):
                     image_size = self.config.data.image_size
-                    download('https://openaipublic.blob.core.windows.net/diffusion/jul-2021/%dx%d_classifier.pt' % image_size, ckpt)
-                classifier = create_classifier(**args_to_dict(self.config.classifier, classifier_defaults().keys()))
+                    download(
+                        "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/%dx%d_classifier.pt"
+                        % image_size,
+                        ckpt,
+                    )
+                classifier = create_classifier(
+                    **args_to_dict(self.config.classifier, classifier_defaults().keys())
+                )
                 classifier.load_state_dict(torch.load(ckpt, map_location=self.device))
                 classifier.to(self.device)
                 if self.config.classifier.classifier_use_fp16:
@@ -152,13 +182,18 @@ class Diffusion(object):
                 classifier = torch.nn.DataParallel(classifier)
 
                 import torch.nn.functional as F
+
                 def cond_fn(x, t, y):
                     with torch.enable_grad():
                         x_in = x.detach().requires_grad_(True)
                         logits = classifier(x_in, t)
                         log_probs = F.log_softmax(logits, dim=-1)
                         selected = log_probs[range(len(logits)), y.view(-1)]
-                        return torch.autograd.grad(selected.sum(), x_in)[0] * self.config.classifier.classifier_scale
+                        return (
+                            torch.autograd.grad(selected.sum(), x_in)[0]
+                            * self.config.classifier.classifier_scale
+                        )
+
                 cls_fn = cond_fn
 
         self.sample_sequence(model, cls_fn)
@@ -166,20 +201,22 @@ class Diffusion(object):
     def sample_sequence(self, model, cls_fn=None):
         args, config = self.args, self.config
 
-        #get original images and corrupted y_0
+        # get original images and corrupted y_0
         dataset, test_dataset = get_dataset(args, config)
-        
+
         device_count = torch.cuda.device_count()
-        
+
         if args.subset_start >= 0 and args.subset_end > 0:
             assert args.subset_end > args.subset_start
-            test_dataset = torch.utils.data.Subset(test_dataset, range(args.subset_start, args.subset_end))
+            test_dataset = torch.utils.data.Subset(
+                test_dataset, range(args.subset_start, args.subset_end)
+            )
         else:
             args.subset_start = 0
             args.subset_end = len(test_dataset)
 
-        print(f'Dataset has size {len(test_dataset)}')    
-        
+        print(f"Dataset has size {len(test_dataset)}")
+
         def seed_worker(worker_id):
             worker_seed = args.seed % 2**32
             np.random.seed(worker_seed)
@@ -195,39 +232,84 @@ class Diffusion(object):
             worker_init_fn=seed_worker,
             generator=g,
         )
-        
 
         ## get degradation operator ##
         deg = args.deg
-        if deg[:4] == 'jpeg':
+        if deg[:4] == "jpeg":
             jpeg_qf = int(deg[4:])
             from functions.jpeg_torch import jpeg_decode as jd, jpeg_encode as je
             from functools import partial
-            jpeg_decode = partial(jd, qf = jpeg_qf)
-            jpeg_encode = partial(je, qf = jpeg_qf)
-        elif deg == 'quant':
-            from functions.jpeg_torch import quantization_decode as qd, quantization_encode as qe
+
+            jpeg_decode = partial(jd, qf=jpeg_qf)
+            jpeg_encode = partial(je, qf=jpeg_qf)
+        elif deg == "quant":
+            from functions.jpeg_torch import (
+                quantization_decode as qd,
+                quantization_encode as qe,
+            )
             from functools import partial
-            jpeg_decode = partial(qd, qf = 0)
-            jpeg_encode = partial(qe, qf = 0)
-        elif deg[:2] == 'pr':
-            jpeg_qf = float(deg[2:])
-            from functions.utils import hio_stage as qd, pr_encode as qe
-            from functools import partial
-            jpeg_decode = partial(qd)
-            jpeg_encode = partial(qe, alpha_ = jpeg_qf)
+
+            jpeg_decode = partial(qd, qf=0)
+            jpeg_encode = partial(qe, qf=0)
+        elif deg[:2] == "pr":
+            if deg[2:] == "empirical":
+                from functions.utils_empirical import hio_stage as qd, pr_encode as qe
+
+                jpeg_qf = "empirical"
+
+                jpeg_decode = qd
+                jpeg_encode = qe
+            else:
+                from functions.utils_synthetic import hio_stage as qd, pr_encode as qe
+
+                jpeg_qf = float(deg[2:])
+
+                from functools import partial
+
+                jpeg_decode = partial(qd)
+                jpeg_encode = partial(qe, alpha_=jpeg_qf)
         else:
             print("ERROR: degradation type not supported")
             quit()
-        sigma_0 = 0 #no gaussian noise in jpeg measurements
-        
-        print(f'Start from {args.subset_start}')
+        sigma_0 = 0  # no gaussian noise in jpeg measurements
+
+        print(f"Start from {args.subset_start}")
         idx_init = args.subset_start
         idx_so_far = args.subset_start
         avg_psnr = 0.0
         avg_psnr_y = 0.0
         pbar = tqdm.tqdm(val_loader)
         for x_orig, classes in pbar:
+            if deg == "prempirical":
+                print(
+                    "empirical::",
+                    x_orig.shape,
+                    x_orig.min(),
+                    x_orig.max(),
+                    x_orig.dtype,
+                )
+                import h5py
+                import cv2
+
+                with h5py.File("exp/empirical_data/XH_test.mat", "r") as f:
+                    # Assuming the variable inside the .mat file is 'XH_test'
+                    XH_test = f["XH_test"][:]
+                print(XH_test.shape)
+                X_test = XH_test[:, 1].reshape(64, 64, order="F")
+                X_test_resized = cv2.resize(X_test, (256, 256))
+                X_test_tensor = torch.tensor(
+                    np.repeat(X_test_resized[np.newaxis, :, :], 3, axis=0),
+                    dtype=torch.float32,
+                )
+                x_orig = X_test_tensor.unsqueeze(0) / 255.0
+                print(
+                    "empirical::",
+                    x_orig.shape,
+                    x_orig.min(),
+                    x_orig.max(),
+                    x_orig.dtype,
+                )
+
             x_orig = x_orig.to(self.device)
             x_orig = data_transform(self.config, x_orig)
 
@@ -237,10 +319,12 @@ class Diffusion(object):
 
             for i in range(len(pinv_y_0)):
                 tvu.save_image(
-                    inverse_data_transform(config, pinv_y_0[i]), os.path.join(self.args.image_folder, f"y0_{idx_so_far + i}.png")
+                    inverse_data_transform(config, pinv_y_0[i]),
+                    os.path.join(self.args.image_folder, f"y0_{idx_so_far + i}.png"),
                 )
                 tvu.save_image(
-                    inverse_data_transform(config, x_orig[i]), os.path.join(self.args.image_folder, f"orig_{idx_so_far + i}.png")
+                    inverse_data_transform(config, x_orig[i]),
+                    os.path.join(self.args.image_folder, f"orig_{idx_so_far + i}.png"),
                 )
 
             ##Begin DDRM
@@ -257,24 +341,37 @@ class Diffusion(object):
 
                 # NOTE: This means that we are producing each predicted x0, not x_{t-1} at timestep t.
                 with torch.no_grad():
-                    local_x, _ = self.sample_image_jpeg(local_x, model, y_0, last=False, cls_fn=cls_fn, classes=classes, jpeg_qf=jpeg_qf)
+                    local_x, _ = self.sample_image_jpeg(
+                        local_x,
+                        model,
+                        y_0,
+                        last=False,
+                        cls_fn=cls_fn,
+                        classes=classes,
+                        jpeg_qf=jpeg_qf,
+                    )
 
                 local_x = [inverse_data_transform(config, y) for y in local_x]
-                if x == 0: x = local_x
-                else: x = [x[i] + local_x[i] for i in range(len(local_x))]
-            x  = [item / num_avg_samples for item in x]
+                if x == 0:
+                    x = local_x
+                else:
+                    x = [x[i] + local_x[i] for i in range(len(local_x))]
+            x = [item / num_avg_samples for item in x]
 
-            for i in [-1]: # range(len(x)):
+            for i in [-1]:  # range(len(x)):
                 for j in range(x[i].size(0)):
                     tvu.save_image(
-                        x[i][j], os.path.join(self.args.image_folder, f"{idx_so_far + j}_{i}.png")
+                        x[i][j],
+                        os.path.join(
+                            self.args.image_folder, f"{idx_so_far + j}_{i}.png"
+                        ),
                     )
-                    if i == len(x)-1 or i == -1:
+                    if i == len(x) - 1 or i == -1:
                         orig = inverse_data_transform(config, x_orig[j])
                         mse = torch.mean((x[i][j].to(self.device) - orig) ** 2)
                         psnr = 10 * torch.log10(1 / mse)
                         avg_psnr += psnr
-                        if deg[:4] == 'jpeg' or deg == 'pr':
+                        if deg[:4] == "jpeg" or deg == "pr":
                             y_inv = inverse_data_transform(config, pinv_y_0[j])
                             mse = torch.mean((y_inv - orig) ** 2)
                             psnr = 10 * torch.log10(1 / mse)
@@ -284,18 +381,34 @@ class Diffusion(object):
 
             pbar.set_description("PSNR: %.2f" % (avg_psnr / (idx_so_far - idx_init)))
 
+            if deg == "prempirical":
+                break
+
         avg_psnr = avg_psnr / (idx_so_far - idx_init)
         print("Total Average PSNR: %.2f" % avg_psnr)
-        avg_psnr_y = avg_psnr_y / (idx_so_far - idx_init) 
+        avg_psnr_y = avg_psnr_y / (idx_so_far - idx_init)
         print("Total Average PSNR of JPEG: %.2f" % avg_psnr_y)
         print("Number of samples: %d" % (idx_so_far - idx_init))
 
-    def sample_image_jpeg(self, x, model, y_0, last=True, cls_fn=None, classes=None, jpeg_qf=None):
+    def sample_image_jpeg(
+        self, x, model, y_0, last=True, cls_fn=None, classes=None, jpeg_qf=None
+    ):
         skip = self.args.init_timestep // self.args.timesteps
         seq = range(0, self.args.init_timestep, skip)
-        
-        x = jpeg_steps(x, seq, model, self.betas, y_0, \
-            etaB=self.args.etaB, etaA=self.args.eta, etaC=self.args.eta, cls_fn=cls_fn, classes=classes, jpeg_qf=jpeg_qf)
+
+        x = jpeg_steps(
+            x,
+            seq,
+            model,
+            self.betas,
+            y_0,
+            etaB=self.args.etaB,
+            etaA=self.args.eta,
+            etaC=self.args.eta,
+            cls_fn=cls_fn,
+            classes=classes,
+            jpeg_qf=jpeg_qf,
+        )
         if last:
             x = x[0][-1]
         return x

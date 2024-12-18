@@ -1,2 +1,7 @@
-export CUDA_VISIBLE_DEVICES=0
-python main.py --ni --config celeba_pr.yml --doc celeba_dene26 -i celeba_dene26 --deg pr --num_avg_samples 1 --eta 1.0 --etaB 0.6 --timesteps 20 --init_timestep 300
+export CUDA_VISIBLE_DEVICES=3
+# if first argument
+if [ "$1" == "empirical" ]; then
+    python main.py --ni --config celeba_pr.yml --doc celeba_dene26_onuronuronur -i celeba_dene26_onuronuronur --deg prempirical --num_avg_samples 1 --eta 1.0 --etaB 0.6 --timesteps 20 --init_timestep 300
+else
+    python main.py --ni --config celeba_pr.yml --doc celeba_dene26_onuronuronur -i celeba_dene26_onuronuronur --deg pr3 --num_avg_samples 1 --eta 1.0 --etaB 0.6 --timesteps 20 --init_timestep 300
+fi

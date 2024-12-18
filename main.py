@@ -61,27 +61,18 @@ def parse_args_and_config():
     parser.add_argument(
         "--timesteps", type=int, default=20, help="number of steps involved"
     )
+    parser.add_argument("--deg", type=str, required=True, help="Degradation")
     parser.add_argument(
-        "--deg", type=str, required=True, help="Degradation"
+        "--num_avg_samples",
+        type=int,
+        default=1,
+        help="Number of samples to average per input",
     )
-    parser.add_argument(
-        "--num_avg_samples", type=int, default=1, help="Number of samples to average per input"
-    )
-    parser.add_argument(
-        "--eta", type=float, default=1.0, help="Eta"
-    )
-    parser.add_argument(
-        "--etaB", type=float, default=0.4, help="Eta_b"
-    )
-    parser.add_argument(
-        '--subset_start', type=int, default=-1
-    )
-    parser.add_argument(
-        '--subset_end', type=int, default=-1
-    )
-    parser.add_argument(
-        '--init_timestep', type=int, default=300
-    )
+    parser.add_argument("--eta", type=float, default=1.0, help="Eta")
+    parser.add_argument("--etaB", type=float, default=0.4, help="Eta_b")
+    parser.add_argument("--subset_start", type=int, default=-1)
+    parser.add_argument("--subset_end", type=int, default=-1)
+    parser.add_argument("--init_timestep", type=int, default=300)
 
     args = parser.parse_args()
     args.log_path = os.path.join(args.exp, "logs", args.doc)
@@ -107,9 +98,7 @@ def parse_args_and_config():
     logger.setLevel(level)
 
     os.makedirs(os.path.join(args.exp, "image_samples"), exist_ok=True)
-    args.image_folder = os.path.join(
-        args.exp, "image_samples", args.image_folder
-    )
+    args.image_folder = os.path.join(args.exp, "image_samples", args.image_folder)
     if not os.path.exists(args.image_folder):
         os.makedirs(args.image_folder)
     else:
@@ -168,7 +157,7 @@ def main():
         runner.sample()
     except Exception:
         logging.error(traceback.format_exc())
-        
+
     calculate_metrics(args.image_folder)
 
     return 0
