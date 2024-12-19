@@ -42,7 +42,8 @@ import cv2
 
 # Global Variables
 A_matrix = cp.load("exp/empirical_data/A_matrix.npy")
-A_adj_matrix = A_matrix.T.conj()
+# A_adj_matrix = A_matrix.T.conj()
+A_adj_matrix = cp.linalg.pinv(A_matrix)
 
 A = lambda x: (A_matrix @ x.flatten(order="F")).reshape(4 * 64, 4 * 64, order="F")
 A_adj = lambda y: (A_adj_matrix @ y.flatten(order="F")).reshape(64, 64, order="F")
@@ -105,7 +106,7 @@ A_adj = lambda y: (A_adj_matrix @ y.flatten(order="F")).reshape(64, 64, order="F
 
 
 # Hybrid Input-Output Algorithm
-def fienup_phase_retrieval(mag, beta=0.97, steps=200, x_init=None, verbose=True):
+def fienup_phase_retrieval(mag, beta=0.9, steps=200, x_init=None, verbose=True):
     """
     Hybrid Input-Output (HIO) algorithm for phase retrieval.
 
@@ -145,8 +146,6 @@ def fienup_phase_retrieval(mag, beta=0.97, steps=200, x_init=None, verbose=True)
         # Step 2: Apply HIO non-negativity constraint
         negative_indices = g_prime < 0
         x_new = cp.where(negative_indices, x - beta * g_prime, g_prime)
-        # negative_indices = g_prime > 1  # cp.bitwise_or(g_prime < 0, g_prime > 1)
-        # x_new = cp.where(negative_indices, x_new + beta * g_prime, g_prime)
 
         # Step 3: Apply forward operator to enforce magnitude constraint
         Ax_new = A(x_new)
@@ -201,7 +200,7 @@ def hio_stage(image_full_X_test):
     x_init_best = random_best(Y_test)
 
     result = fienup_phase_retrieval(
-        Y_test, steps=1900, x_init=x_init_best, verbose=True
+        Y_test, steps=12900, x_init=x_init_best, verbose=True
     )
 
     print(
@@ -209,7 +208,7 @@ def hio_stage(image_full_X_test):
     )
 
     # Reshape the result to 64x64
-    image_iter = result / result.max() * 255  # .clip(0, 1) * 255
+    image_iter = result * 255  # / result.max()
     image_iter = image_iter.clip(0, 255)
 
     print(
@@ -283,7 +282,6 @@ def pr_encode(image_full, alpha_=3):
     print(Y_test)
     print(calculated_y.min(), calculated_y.max(), calculated_y.mean())
     print(real_y.min(), real_y.max(), real_y.mean())
-    # save images real_y, calculated_y
     plt.imsave("real_y.png", real_y, cmap="gray")
     plt.imsave("calculated_y.png", calculated_y, cmap="gray")
 
@@ -326,10 +324,10 @@ def jd(je_output):
     print("image_full", image_full.shape, image_full.min(), image_full.max())
 
     # Perform Fienup phase retrieval
-    result = fienup_phase_retrieval(Y_test, steps=280, x_init=image_full, verbose=False)
+    result = fienup_phase_retrieval(Y_test, steps=70, x_init=image_full, verbose=False)
 
     # Post-process the result
-    image_iter = result / result.max() * 255
+    image_iter = result * 255  # / result.max()
     image_iter = image_iter.clip(0, 255)
 
     print("result", result.shape, result.min(), result.max(), result.dtype)

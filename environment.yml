@@ -1,8 +1,10 @@
 name: ddrm
 channels:
   - pytorch
-  - conda-forge
   - defaults
+  - conda-forge
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=1_gnu
@@ -19,9 +21,9 @@ dependencies:
   - brotlipy=0.7.0=py39h3811e60_1003
   - bzip2=1.0.8=h7b6447c_0
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2021.10.26=h06a4308_2
+  - ca-certificates=2024.11.26=h06a4308_0
   - cachetools=4.2.4=pyhd8ed1ab_0
-  - certifi=2021.10.8=py39hf3d152e_1
+  - certifi=2024.8.30=py39h06a4308_0
   - cffi=1.15.0=py39h4bc2ebd_0
   - charset-normalizer=2.0.9=pyhd8ed1ab_0
   - click=8.0.3=py39hf3d152e_1
@@ -79,16 +81,13 @@ dependencies:
   - multidict=5.2.0=py39h3811e60_1
   - ncurses=6.2=h58526e2_4
   - nettle=3.7.3=hbbd107a_1
-  - numpy=1.21.2=py39h20f2e39_0
-  - numpy-base=1.21.2=py39h79a1101_0
   - oauthlib=3.1.1=pyhd8ed1ab_0
   - olefile=0.46=pyhd3eb1b0_0
   - openh264=2.1.1=h4ff587b_0
-  - openssl=1.1.1l=h7f98852_0
+  - openssl=1.1.1w=h7f8727e_0
   - parso=0.8.3=pyhd8ed1ab_0
   - pexpect=4.8.0=pyh9f0ad1d_2
   - pickleshare=0.7.5=py39hde42818_1002
-  - pillow=8.4.0=py39h5aabda8_0
   - pip=21.2.4=py39h06a4308_0
   - prompt-toolkit=3.0.24=pyha770c72_0
   - protobuf=3.17.2=py39he80948d_0
@@ -111,7 +110,6 @@ dependencies:
   - requests=2.26.0=pyhd8ed1ab_1
   - requests-oauthlib=1.3.0=pyh9f0ad1d_0
   - rsa=4.8=pyhd8ed1ab_0
-  - scipy=1.7.3=py39hee8e79c_0
   - setuptools=58.0.4=py39h06a4308_0
   - six=1.16.0=pyhd3eb1b0_0
   - sqlite=3.37.0=hc218d9a_0
@@ -137,10 +135,27 @@ dependencies:
   - zlib=1.2.11=h7f8727e_4
   - zstd=1.4.9=haebb681_0
   - pip:
-    - torch-fidelity==0.3.0
-    - matplotlib
-    - cupy
-    - mat73
-    - opencv-python
-    - scikit-image
-    - torchmetrics==1.3.0
+      - contourpy==1.3.0
+      - cupy==13.3.0
+      - cycler==0.12.1
+      - fastrlock==0.8.2
+      - filelock==3.16.1
+      - fonttools==4.55.3
+      - h5py==3.12.1
+      - imageio==2.36.1
+      - importlib-resources==6.4.5
+      - kiwisolver==1.4.7
+      - lazy-loader==0.4
+      - lightning-utilities==0.11.9
+      - mat73==0.65
+      - matplotlib==3.9.4
+      - numpy==1.23.5
+      - pillow==11.0.0
+      - pydeprecate==0.3.2
+      - pyparsing==3.2.0
+      - scikit-image==0.24.0
+      - scipy==1.13.1
+      - tifffile==2024.8.30
+      - torch==1.7.1
+      - torch-fidelity==0.3.0
+      - torchmetrics==1.3.0
