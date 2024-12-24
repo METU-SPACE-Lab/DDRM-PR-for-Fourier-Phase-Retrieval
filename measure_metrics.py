@@ -62,6 +62,8 @@ def calculate_metrics(folder_path):
         lpips_b.append(lpips_metric(orig_img_tensor, method_b_img_tensor).item())
 
     # Calculate average metrics
+    # print(psnr_a, psnr_b)
+
     avg_psnr_a = np.mean(psnr_a)
     avg_ssim_a = np.mean(ssim_a)
     avg_lpips_a = np.mean(lpips_a)
