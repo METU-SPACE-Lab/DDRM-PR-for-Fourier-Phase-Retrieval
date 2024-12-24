@@ -189,7 +189,7 @@ def random_best(magnitudes_oversampled):
 with h5py.File("exp/empirical_data/YH_squared_test.mat", "r") as f:
     YH_test = f["YH_squared_test"][:]
 
-Y_test_index, Y_test = None, None
+Y_test_index, Y_test = -1, None
 
 
 # HIO Stage
@@ -263,7 +263,8 @@ def hio_stage(image_full_X_test):
 # PR Encode
 def pr_encode(image_full, alpha_=3):
     global Y_test, Y_test_index
-    Y_test_index = Y_test_index + 1 if Y_test_index else 0
+    Y_test_index += 1
+    print("Y_test_index", Y_test_index)
     Y_test = np.sqrt(YH_test[:, Y_test_index].reshape(4 * 64, 4 * 64, order="F"))
 
     # print("EMPIRIK-PRENCODE")
