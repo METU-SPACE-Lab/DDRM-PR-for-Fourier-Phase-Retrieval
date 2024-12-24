@@ -281,13 +281,6 @@ class Diffusion(object):
         pbar = tqdm.tqdm(val_loader)
         for x_orig, classes in pbar:
             if deg == "prempirical":
-                # print(
-                #     "empirical::",
-                #     x_orig.shape,
-                #     x_orig.min(),
-                #     x_orig.max(),
-                #     x_orig.dtype,
-                # )
                 import h5py
                 import cv2
 
@@ -302,13 +295,6 @@ class Diffusion(object):
                     dtype=torch.float32,
                 )
                 x_orig = X_test_tensor.unsqueeze(0) / 255.0
-                # print(
-                #     "empirical::",
-                #     x_orig.shape,
-                #     x_orig.min(),
-                #     x_orig.max(),
-                #     x_orig.dtype,
-                # )
 
             x_orig = x_orig.to(self.device)
             x_orig = data_transform(self.config, x_orig)
@@ -360,10 +346,10 @@ class Diffusion(object):
 
             for i in [-1]:  # range(len(x)):
                 for j in range(x[i].size(0)):
-                    # if deg == "prempirical":
-                    #     threshold_value = 0
-                    #     max_value = 255
-                    #     x[i][j] = torch.where(x[i][j] > threshold_value, max_value, 0)
+                    if deg == "prempirical":
+                        x[i][j] = (x[i][j] - x[i][j].min()) / (
+                            x[i][j].max() - x[i][j].min()
+                        )
 
                     tvu.save_image(
                         x[i][j],

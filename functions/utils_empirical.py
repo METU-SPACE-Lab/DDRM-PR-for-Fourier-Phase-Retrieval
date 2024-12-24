@@ -323,7 +323,7 @@ def jd(je_output):
     # print("image_full", image_full.shape, image_full.min(), image_full.max())
 
     # Perform Fienup phase retrieval
-    result = fienup_phase_retrieval(Y_test, steps=500, x_init=image_full, verbose=False)
+    result = fienup_phase_retrieval(Y_test, steps=100, x_init=image_full, verbose=False)
 
     # Post-process the result
     image_iter = result * 255 / result.max()
