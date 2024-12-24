@@ -262,9 +262,9 @@ def hio_stage(image_full_X_test):
 
 # PR Encode
 def pr_encode(image_full, alpha_=3):
+    # print("Y_test_index", Y_test_index)
     global Y_test, Y_test_index
     Y_test_index += 1
-    print("Y_test_index", Y_test_index)
     Y_test = np.sqrt(YH_test[:, Y_test_index].reshape(4 * 64, 4 * 64, order="F"))
 
     # print("EMPIRIK-PRENCODE")
