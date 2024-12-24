@@ -11,6 +11,7 @@ import torchvision
 from PIL import Image
 from functools import partial
 
+
 class Crop(object):
     def __init__(self, x1, x2, y1, y2):
         self.x1 = x1
@@ -26,7 +27,8 @@ class Crop(object):
             self.x1, self.x2, self.y1, self.y2
         )
 
-def center_crop_arr(pil_image, image_size = 256):
+
+def center_crop_arr(pil_image, image_size=256):
     # Imported from openai/guided-diffusion
     while min(*pil_image.size) >= 2 * image_size:
         pil_image = pil_image.resize(
@@ -112,9 +114,15 @@ def get_dataset(args, config):
     elif config.data.dataset == "LSUN":
         if config.data.out_of_dist:
             dataset = torchvision.datasets.ImageFolder(
-                os.path.join(args.exp, 'datasets', "ood_{}".format(config.data.category)),
-                transform=transforms.Compose([partial(center_crop_arr, image_size=config.data.image_size),
-                transforms.ToTensor()])
+                os.path.join(
+                    args.exp, "datasets", "ood_{}".format(config.data.category)
+                ),
+                transform=transforms.Compose(
+                    [
+                        partial(center_crop_arr, image_size=config.data.image_size),
+                        transforms.ToTensor(),
+                    ]
+                ),
             )
             test_dataset = dataset
         else:
@@ -129,23 +137,35 @@ def get_dataset(args, config):
                         transforms.CenterCrop(config.data.image_size),
                         transforms.ToTensor(),
                     ]
-                )
+                ),
             )
             dataset = test_dataset
-    
-    elif config.data.dataset == "CelebA_HQ" or config.data.dataset == 'FFHQ':
+
+    elif config.data.dataset == "CelebA_HQ" or config.data.dataset == "FFHQ":
         if config.data.out_of_dist:
             dataset = torchvision.datasets.ImageFolder(
                 os.path.join(args.exp, "datasets", "ood_celeba"),
-                transform=transforms.Compose([transforms.Resize([config.data.image_size, config.data.image_size]),
-                                              transforms.ToTensor()])
+                transform=transforms.Compose(
+                    [
+                        transforms.Resize(
+                            [config.data.image_size, config.data.image_size]
+                        ),
+                        transforms.ToTensor(),
+                    ]
+                ),
             )
             test_dataset = dataset
         else:
             dataset = torchvision.datasets.ImageFolder(
                 os.path.join(args.exp, "datasets", "celeba_hq"),
-                transform=transforms.Compose([transforms.Resize([config.data.image_size, config.data.image_size]),
-                                              transforms.ToTensor()])
+                transform=transforms.Compose(
+                    [
+                        transforms.Resize(
+                            [config.data.image_size, config.data.image_size]
+                        ),
+                        transforms.ToTensor(),
+                    ]
+                ),
             )
             num_items = len(dataset)
             indices = list(range(num_items))
@@ -159,30 +179,55 @@ def get_dataset(args, config):
             )
             test_dataset = Subset(dataset, test_indices)
 
-    elif config.data.dataset == 'ImageNet':
+    elif config.data.dataset == "ImageNet":
         # only use validation dataset here
-        
+
         if config.data.subset_1k:
             from datasets.imagenet_subset import ImageDataset
-            dataset = ImageDataset(os.path.join(args.exp, 'datasets', 'imagenet', 'imagenet'),
-                     os.path.join(args.exp, 'imagenet_val_1k.txt'),
-                     image_size=config.data.image_size,
-                     normalize=False)
+
+            dataset = ImageDataset(
+                os.path.join(args.exp, "datasets", "imagenet", "imagenet"),
+                os.path.join(args.exp, "imagenet_val_1k.txt"),
+                image_size=config.data.image_size,
+                normalize=False,
+            )
             test_dataset = dataset
         elif config.data.out_of_dist:
             dataset = torchvision.datasets.ImageFolder(
-                os.path.join(args.exp, 'datasets', 'ood'),
-                transform=transforms.Compose([partial(center_crop_arr, image_size=config.data.image_size),
-                transforms.ToTensor()])
+                os.path.join(args.exp, "datasets", "ood"),
+                transform=transforms.Compose(
+                    [
+                        partial(center_crop_arr, image_size=config.data.image_size),
+                        transforms.ToTensor(),
+                    ]
+                ),
             )
             test_dataset = dataset
         else:
             dataset = torchvision.datasets.ImageNet(
-                os.path.join(args.exp, 'datasets', 'imagenet'), split='val',
-                transform=transforms.Compose([partial(center_crop_arr, image_size=config.data.image_size),
-                transforms.ToTensor()])
+                os.path.join(args.exp, "datasets", "imagenet"),
+                split="val",
+                transform=transforms.Compose(
+                    [
+                        partial(center_crop_arr, image_size=config.data.image_size),
+                        transforms.ToTensor(),
+                    ]
+                ),
             )
             test_dataset = dataset
+    elif config.data.dataset == "CIFAR10":
+        dataset = torchvision.datasets.CIFAR10(
+            root=os.path.join(args.exp, "datasets", "cifar10"),
+            train=True,
+            transform=tran_transform,
+            download=True,
+        )
+        test_dataset = torchvision.datasets.CIFAR10(
+            root=os.path.join(args.exp, "datasets", "cifar10"),
+            train=False,
+            transform=test_transform,
+            download=True,
+        )
     else:
         dataset, test_dataset = None, None
 
@@ -219,7 +264,7 @@ def inverse_data_transform(config, X):
         X = torch.sigmoid(X)
     elif config.data.rescaled:
         X = (X + 1.0) / 2.0
-    
+
     # if hasattr(config.data, "cmap_convert"):
     #     print(X)
 

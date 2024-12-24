@@ -189,61 +189,59 @@ def random_best(magnitudes_oversampled):
 with h5py.File("exp/empirical_data/YH_squared_test.mat", "r") as f:
     YH_test = f["YH_squared_test"][:]
 
-Y_test = np.sqrt(YH_test[:, 2].reshape(4 * 64, 4 * 64, order="F"))
+Y_test = np.sqrt(YH_test[:, 1].reshape(4 * 64, 4 * 64, order="F"))
 
 
 # HIO Stage
 def hio_stage(image_full_X_test):
-    print("EMPIRIK-HIOSTAGE")
-    image_full = image_full_X_test
+    use_saved = True
+    if not use_saved:
+        # print("EMPIRIK-HIOSTAGE")
+        image_full = image_full_X_test
 
-    x_init_best = random_best(Y_test)
+        x_init_best = random_best(Y_test)
 
-    result = fienup_phase_retrieval(
-        Y_test, steps=12900, x_init=x_init_best, verbose=True
-    )
+        result = fienup_phase_retrieval(
+            Y_test, steps=2300, x_init=x_init_best, verbose=True
+        )
 
-    print(
-        "result", result.shape, result.min(), result.max(), result.mean(), result.dtype
-    )
+        # print(
+        #     "result", result.shape, result.min(), result.max(), result.mean(), result.dtype
+        # )
 
-    # Reshape the result to 64x64
-    image_iter = result * 255  # / result.max()
-    image_iter = image_iter.clip(0, 255)
+        # Reshape the result to 64x64
+        image_iter = result * 255 / result.max()
+        image_iter = image_iter.clip(0, 255)
 
-    print(
-        "image_full",
-        image_full.shape,
-        image_full.min(),
-        image_full.max(),
-        image_full.mean(),
-        image_full.dtype,
-    )
-    print(
-        "image_iter",
-        image_iter.shape,
-        image_iter.min(),
-        image_iter.max(),
-        image_iter.mean(),
-        image_iter.dtype,
-    )
+        # print(
+        #     "image_full",
+        #     image_full.shape,
+        #     image_full.min(),
+        #     image_full.max(),
+        #     image_full.mean(),
+        #     image_full.dtype,
+        # )
+        # print(
+        #     "image_iter",
+        #     image_iter.shape,
+        #     image_iter.min(),
+        #     image_iter.max(),
+        #     image_iter.mean(),
+        #     image_iter.dtype,
+        # )
 
-    image_iter_flipped = np.flip(image_iter).copy()
+        image_iter_flipped = np.flip(image_iter).copy()
 
-    if skimage.metrics.peak_signal_noise_ratio(
-        image_full / 255, image_iter_flipped / 255
-    ) > skimage.metrics.peak_signal_noise_ratio(image_full / 255, image_iter / 255):
-        image_iter = image_iter_flipped
+        if skimage.metrics.peak_signal_noise_ratio(
+            image_full / 255, image_iter_flipped / 255
+        ) > skimage.metrics.peak_signal_noise_ratio(image_full / 255, image_iter / 255):
+            image_iter = image_iter_flipped
+    else:
+        image_iter = cv2.imread(
+            "exp/empirical_data/y0_0.png", cv2.IMREAD_GRAYSCALE
+        ).astype(np.float32)
 
     image_iter = cv2.resize(image_iter, (256, 256))
-    print(
-        "-image_iter",
-        image_iter.shape,
-        image_iter.min(),
-        image_iter.max(),
-        image_iter.mean(),
-        image_iter.dtype,
-    )
     image_iter = np.repeat(np.expand_dims(image_iter, axis=0), 3, axis=0)
 
     output = (
@@ -255,33 +253,34 @@ def hio_stage(image_full_X_test):
         - 1
     )
 
-    print(
-        "output", output.shape, output.min(), output.max(), output.mean(), output.dtype
-    )
+    # print(
+    #     "output", output.shape, output.min(), output.max(), output.mean(), output.dtype
+    # )
 
     return output
 
 
 # PR Encode
 def pr_encode(image_full, alpha_=3):
-    print("EMPIRIK-PRENCODE")
+    # print("EMPIRIK-PRENCODE")
 
     # Ax =? Y_test
     image_full_tensor = image_full
     image_full = (image_full_tensor[0, 0].cpu().numpy() + 1) / 2 * 255
     image_full_64 = cv2.resize(image_full, (64, 64))
-    print(
-        "image_full_64", image_full_64.min(), image_full_64.max(), image_full_64.mean()
-    )
+    # print(
+    #     "image_full_64", image_full_64.min(), image_full_64.max(), image_full_64.mean()
+    # )
 
     # norm of A(image_full_64) - Y_test
+    global Y_test
     calculated_y = cp.asnumpy(cp.abs(A(cp.array(image_full_64 / image_full_64.max()))))
     real_y = Y_test
 
-    print(calculated_y)
-    print(Y_test)
-    print(calculated_y.min(), calculated_y.max(), calculated_y.mean())
-    print(real_y.min(), real_y.max(), real_y.mean())
+    # print(calculated_y)
+    # print(Y_test)
+    # print(calculated_y.min(), calculated_y.max(), calculated_y.mean())
+    # print(real_y.min(), real_y.max(), real_y.mean())
     plt.imsave("real_y.png", real_y, cmap="gray")
     plt.imsave("calculated_y.png", calculated_y, cmap="gray")
 
@@ -295,13 +294,13 @@ def je(image_full):
     Prepares the data required for phase retrieval using the A function.
     Extracts the first channel of the image_full and reshapes it.
     """
-    print("EMPIRIK-JE")
+    # print("EMPIRIK-JE")
 
     # Use A function to process image_full's first channel
     image_full_tensor = image_full
-    print("image_full_tensor", image_full_tensor.shape)
+    # print("image_full_tensor", image_full_tensor.shape)
     image_full = (image_full_tensor[0].mean(dim=0).cpu().numpy() + 1) / 2 * 255
-    print("----image_full", image_full.shape)
+    # print("----image_full", image_full.shape)
     # resize 64x64
     image_full_64 = cv2.resize(image_full, (64, 64))
     # clip 0-255
@@ -319,25 +318,25 @@ def jd(je_output):
     Performs phase retrieval using Fienup's algorithm without random initialization.
     Processes the output from je and returns a 3-channel batch tensor.
     """
-    print("EMPIRIK-JD")
+    # print("EMPIRIK-JD")
     image_full = je_output
-    print("image_full", image_full.shape, image_full.min(), image_full.max())
+    # print("image_full", image_full.shape, image_full.min(), image_full.max())
 
     # Perform Fienup phase retrieval
-    result = fienup_phase_retrieval(Y_test, steps=70, x_init=image_full, verbose=False)
+    result = fienup_phase_retrieval(Y_test, steps=500, x_init=image_full, verbose=False)
 
     # Post-process the result
-    image_iter = result * 255  # / result.max()
+    image_iter = result * 255 / result.max()
     image_iter = image_iter.clip(0, 255)
 
-    print("result", result.shape, result.min(), result.max(), result.dtype)
-    print(
-        "image_full",
-        image_full.shape,
-        image_full.min(),
-        image_full.max(),
-        image_full.dtype,
-    )
+    # print("result", result.shape, result.min(), result.max(), result.dtype)
+    # print(
+    #     "image_full",
+    #     image_full.shape,
+    #     image_full.min(),
+    #     image_full.max(),
+    #     image_full.dtype,
+    # )
 
     # Flip the reconstructed image if necessary
     image_iter_flipped = np.flip(image_iter).copy()
@@ -348,6 +347,10 @@ def jd(je_output):
         image_iter = image_iter_flipped
 
     # Repeat the result across 3 channels
+    # blur = cv2.GaussianBlur(image_iter, (5, 5), 0).astype(np.uint8)
+    # image_iter = blur
+    # image_iter = cv2.threshold(blur, 80, 255, cv2.THRESH_BINARY)[1]
+    # image_iter = cv2.threshold(blur, 40, 255, cv2.THRESH_BINARY)[1]
     image_iter = cv2.resize(image_iter, (256, 256))
     image_iter = np.repeat(np.expand_dims(image_iter, axis=0), 3, axis=0)
 
@@ -361,6 +364,6 @@ def jd(je_output):
         - 1
     )
 
-    print("output", output.shape, output.min(), output.max(), output.dtype)
+    # print("output", output.shape, output.min(), output.max(), output.dtype)
 
     return output
