@@ -189,12 +189,12 @@ def random_best(magnitudes_oversampled):
 with h5py.File("exp/empirical_data/YH_squared_test.mat", "r") as f:
     YH_test = f["YH_squared_test"][:]
 
-Y_test = np.sqrt(YH_test[:, 1].reshape(4 * 64, 4 * 64, order="F"))
+Y_test_index, Y_test = None, None
 
 
 # HIO Stage
 def hio_stage(image_full_X_test):
-    use_saved = True
+    use_saved = False
     if not use_saved:
         # print("EMPIRIK-HIOSTAGE")
         image_full = image_full_X_test
@@ -262,6 +262,10 @@ def hio_stage(image_full_X_test):
 
 # PR Encode
 def pr_encode(image_full, alpha_=3):
+    global Y_test, Y_test_index
+    Y_test_index = Y_test_index + 1 if Y_test_index else 0
+    Y_test = np.sqrt(YH_test[:, Y_test_index].reshape(4 * 64, 4 * 64, order="F"))
+
     # print("EMPIRIK-PRENCODE")
 
     # Ax =? Y_test
@@ -273,7 +277,7 @@ def pr_encode(image_full, alpha_=3):
     # )
 
     # norm of A(image_full_64) - Y_test
-    global Y_test
+    # global Y_test
     calculated_y = cp.asnumpy(cp.abs(A(cp.array(image_full_64 / image_full_64.max()))))
     real_y = Y_test
 
@@ -347,10 +351,6 @@ def jd(je_output):
         image_iter = image_iter_flipped
 
     # Repeat the result across 3 channels
-    # blur = cv2.GaussianBlur(image_iter, (5, 5), 0).astype(np.uint8)
-    # image_iter = blur
-    # image_iter = cv2.threshold(blur, 80, 255, cv2.THRESH_BINARY)[1]
-    # image_iter = cv2.threshold(blur, 40, 255, cv2.THRESH_BINARY)[1]
     image_iter = cv2.resize(image_iter, (256, 256))
     image_iter = np.repeat(np.expand_dims(image_iter, axis=0), 3, axis=0)
 

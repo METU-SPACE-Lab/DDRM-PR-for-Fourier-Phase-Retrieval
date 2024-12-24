@@ -288,7 +288,8 @@ class Diffusion(object):
                     # Assuming the variable inside the .mat file is 'XH_test'
                     XH_test = f["XH_test"][:]
                 # print(XH_test.shape)
-                X_test = XH_test[:, 1].reshape(64, 64, order="F")
+                print(idx_so_far)
+                X_test = XH_test[:, idx_so_far].reshape(64, 64, order="F")
                 X_test_resized = cv2.resize(X_test, (256, 256))
                 X_test_tensor = torch.tensor(
                     np.repeat(X_test_resized[np.newaxis, :, :], 3, axis=0),
@@ -372,8 +373,8 @@ class Diffusion(object):
 
             pbar.set_description("PSNR: %.2f" % (avg_psnr / (idx_so_far - idx_init)))
 
-            if deg == "prempirical":
-                break
+            # if deg == "prempirical":
+            #     break
 
         avg_psnr = avg_psnr / (idx_so_far - idx_init)
         print("Total Average PSNR: %.2f" % avg_psnr)
