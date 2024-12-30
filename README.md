@@ -1,3 +1,5 @@
+# DDRM-PR: Fourier Phase Retrieval using Denoising Diffusion Restoration Models
+
 To repeat the experiments, create a conda environment with environment.yml. And, then you can run main.py like in example_run.sh.
 
 To repeat the experiments, pre-trained models should be downloaded from:
