@@ -9,3 +9,5 @@ The experiments in the paper are also given under "exp/image_samples" folder.
 
 You can refer to:
 [https://github.com/bahjat-kawar/ddrm](https://github.com/bahjat-kawar/ddrm) 
+
+TODO: add the paper link, figures, bib citation, etc.
