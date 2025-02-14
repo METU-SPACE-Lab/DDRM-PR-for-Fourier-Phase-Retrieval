@@ -1,7 +1,7 @@
 # [DDRM-PR: Fourier Phase Retrieval using Denoising Diffusion Restoration Models](https://arxiv.org/abs/2501.03030)
 Mehmet Onurcan Kaya and Figen S. Oktem
 
-This repository contains the official codes for the paper "[DDRM-PR: Fourier Phase Retrieval using Denoising Diffusion Restoration Models](https://arxiv.org/abs/2501.03030)", to appear in Applied Optics. ([arXiv](https://arxiv.org/abs/2501.03030))
+This repository contains the official codes for the paper "[DDRM-PR: Fourier Phase Retrieval using Denoising Diffusion Restoration Models](https://arxiv.org/abs/2501.03030)", Applied Optics 64, A95-A105 (2025). ([arXiv](https://arxiv.org/abs/2501.03030), [journal](https://opg.optica.org/ao/fulltext.cfm?uri=ao-64-5-A95&id=567917))
 
 ## Abstract
 Diffusion models have demonstrated their utility as learned priors for solving various inverse problems. However, most existing approaches are limited to linear inverse problems. This paper exploits the efficient and unsupervised posterior sampling framework of Denoising Diffusion Restoration Models (DDRM) for the solution of nonlinear phase retrieval problem, which requires reconstructing an image from its noisy intensity-only measurements such as Fourier intensity. The approach combines the model-based alternating-projection methods with the DDRM to utilize pretrained unconditional diffusion priors for phase retrieval. The performance is demonstrated through both simulations and experimental data. Results demonstrate the potential of this approach for improving the alternating-projection methods as well as its limitations.
@@ -18,15 +18,21 @@ The experiments in the paper are also given under "exp/image_samples" folder.
 ## Citation
 Please cite the following paper when using this code or data:
 ```
-@misc{kaya2025ddrmprfourierphaseretrieval,
-      title={DDRM-PR: Fourier Phase Retrieval using Denoising Diffusion Restoration Models}, 
-      author={Mehmet Onurcan Kaya and Figen S. Oktem},
-      year={2025},
-      eprint={2501.03030},
-      archivePrefix={arXiv},
-      primaryClass={eess.IV},
-      url={https://arxiv.org/abs/2501.03030}, 
-}  
+@article{Kaya:25,
+author = {Mehmet Onurcan Kaya and Figen S. Oktem},
+journal = {Appl. Opt.},
+keywords = {Deep learning; Image metrics; Inverse design; Optical imaging; Phase retrieval; Spatial light modulators},
+number = {5},
+pages = {A95--A105},
+publisher = {Optica Publishing Group},
+title = {DDRM-PR: Fourier phase retrieval using denoising diffusion restoration models},
+volume = {64},
+month = {Feb},
+year = {2025},
+url = {https://opg.optica.org/ao/abstract.cfm?URI=ao-64-5-A95},
+doi = {10.1364/AO.545150},
+abstract = {Diffusion models have demonstrated their utility as learned priors for solving various inverse problems. However, most existing approaches are limited to linear inverse problems. This paper exploits the efficient and unsupervised posterior sampling framework of denoising diffusion restoration models (DDRMs) for the solution of nonlinear phase retrieval problems, which requires reconstructing an image from its noisy intensity-only measurements such as Fourier intensity. The approach combines the model-based alternating-projection methods with the DDRM to utilize pretrained unconditional diffusion priors for phase retrieval. The performance is demonstrated through both simulations and experimental data. The results demonstrate the potential of this approach for improving the alternating-projection methods as well as its limitations.},
+}
 ```
 
 ## Contact
